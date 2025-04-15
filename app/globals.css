@@ -1,26 +1,602 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: 0 0% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 47 95% 50%;
+  --primary-foreground: 0 0% 9%;
+  --secondary: 0 0% 14.9%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 0 0% 14.9%;
+  --muted-foreground: 0 0% 63.9%;
+  --accent: 0 0% 14.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 14.9%;
+  --input: 0 0% 14.9%;
+  --ring: 47 95% 50%;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.dark {
+  --background: 0 0% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 47 95% 50%;
+  --primary-foreground: 0 0% 9%;
+  --secondary: 0 0% 14.9%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 0 0% 14.9%;
+  --muted-foreground: 0 0% 63.9%;
+  --accent: 0 0% 14.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 14.9%;
+  --input: 0 0% 14.9%;
+  --ring: 47 95% 50%;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    background-color: #121212;
+    color: #f0f0f0;
+    overflow-x: hidden;
+    font-family: var(--font-vt323), monospace;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Font-specific styles */
+.font-vt323 {
+  font-family: var(--font-vt323), monospace;
+  letter-spacing: 0.5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-vt323), monospace;
+  letter-spacing: 1px;
+}
+
+/* 90s VHS Aesthetic */
+
+/* Scanlines effect */
+.scanlines {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 15;
+}
+
+.scanlines::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: repeating-linear-gradient(to bottom, transparent 0%, rgba(255, 255, 255, 0.05) 0.5%, transparent 1%);
+  animation: scanline 10s linear infinite;
+  opacity: 0.3;
+}
+
+@keyframes scanline {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+/* Noise texture */
+.noise {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0.05;
+}
+
+.noise::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFEmlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNS42LWMxNDAgNzkuMTYwNDUxLCAyMDE3LzA1LzA2LTAxOjA4OjIxICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ0MgMjAxOCAoTWFjaW50b3NoKSIgeG1wOkNyZWF0ZURhdGU9IjIwMTktMTItMzBUMDE6Mzc6MjArMDE6MDAiIHhtcDpNb2RpZnlEYXRlPSIyMDE5LTEyLTMwVDAxOjM4OjI4KzAxOjAwIiB4bXA6TWV0YWRhdGFEYXRlPSIyMDE5LTEyLTMwVDAxOjM4OjI4KzAxOjAwIiBkYzpmb3JtYXQ9ImltYWdlL3BuZyIgcGhvdG9zaG9wOkNvbG9yTW9kZT0iMyIgcGhvdG9zaG9wOklDQ1Byb2ZpbGU9InNSR0IgSUVDNjE5NjYtMi4xIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOmIzMzBlMWI0LTk5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");
+  animation: noise 0.2s infinite;
+}
+
+@keyframes noise {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  10% {
+    transform: translate(-1%, -1%);
+  }
+  20% {
+    transform: translate(1%, 1%);
+  }
+  30% {
+    transform: translate(-2%, -2%);
+  }
+  40% {
+    transform: translate(3%, -3%);
+  }
+  50% {
+    transform: translate(-3%, 3%);
+  }
+  60% {
+    transform: translate(4%, 4%);
+  }
+  70% {
+    transform: translate(-4%, -4%);
+  }
+  80% {
+    transform: translate(2%, -2%);
+  }
+  90% {
+    transform: translate(-2%, 2%);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+/* Glitch text effect */
+.glitch-container {
+  position: relative;
+}
+
+.glitch-text {
+  position: relative;
+  animation: glitch-skew 1s infinite linear alternate-reverse;
+}
+
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.glitch-text::before {
+  left: 2px;
+  text-shadow: -2px 0 #ff00c1;
+  clip: rect(44px, 450px, 56px, 0);
+  animation: glitch-anim 5s infinite linear alternate-reverse;
+}
+
+.glitch-text::after {
+  left: -2px;
+  text-shadow: -2px 0 #00fff9, 2px 2px #ff00c1;
+  clip: rect(44px, 450px, 56px, 0);
+  animation: glitch-anim2 5s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim {
+  0% {
+    clip: rect(31px, 9999px, 94px, 0);
+    transform: skew(0.85deg);
+  }
+  5% {
+    clip: rect(70px, 9999px, 71px, 0);
+    transform: skew(0.17deg);
+  }
+  10% {
+    clip: rect(75px, 9999px, 92px, 0);
+    transform: skew(0.4deg);
+  }
+  15% {
+    clip: rect(9px, 9999px, 55px, 0);
+    transform: skew(0.01deg);
+  }
+  20% {
+    clip: rect(19px, 9999px, 70px, 0);
+    transform: skew(0.65deg);
+  }
+  25% {
+    clip: rect(65px, 9999px, 91px, 0);
+    transform: skew(0.05deg);
+  }
+  30% {
+    clip: rect(79px, 9999px, 73px, 0);
+    transform: skew(0.68deg);
+  }
+  35% {
+    clip: rect(75px, 9999px, 80px, 0);
+    transform: skew(0.96deg);
+  }
+  40% {
+    clip: rect(40px, 9999px, 29px, 0);
+    transform: skew(0.72deg);
+  }
+  45% {
+    clip: rect(28px, 9999px, 29px, 0);
+    transform: skew(0.25deg);
+  }
+  50% {
+    clip: rect(89px, 9999px, 100px, 0);
+    transform: skew(0.15deg);
+  }
+  55% {
+    clip: rect(75px, 9999px, 14px, 0);
+    transform: skew(0.82deg);
+  }
+  60% {
+    clip: rect(23px, 9999px, 1px, 0);
+    transform: skew(0.63deg);
+  }
+  65% {
+    clip: rect(30px, 9999px, 96px, 0);
+    transform: skew(0.03deg);
+  }
+  70% {
+    clip: rect(91px, 9999px, 98px, 0);
+    transform: skew(0.2deg);
+  }
+  75% {
+    clip: rect(30px, 9999px, 37px, 0);
+    transform: skew(0.43deg);
+  }
+  80% {
+    clip: rect(56px, 9999px, 69px, 0);
+    transform: skew(0.02deg);
+  }
+  85% {
+    clip: rect(72px, 9999px, 97px, 0);
+    transform: skew(0.07deg);
+  }
+  90% {
+    clip: rect(35px, 9999px, 35px, 0);
+    transform: skew(0.34deg);
+  }
+  95% {
+    clip: rect(56px, 9999px, 8px, 0);
+    transform: skew(0.1deg);
+  }
+  100% {
+    clip: rect(30px, 9999px, 37px, 0);
+    transform: skew(0.43deg);
+  }
+}
+
+@keyframes glitch-anim2 {
+  0% {
+    clip: rect(65px, 9999px, 119px, 0);
+    transform: skew(0.02deg);
+  }
+  5% {
+    clip: rect(110px, 9999px, 74px, 0);
+    transform: skew(0.5deg);
+  }
+  10% {
+    clip: rect(131px, 9999px, 7px, 0);
+    transform: skew(0.46deg);
+  }
+  15% {
+    clip: rect(137px, 9999px, 140px, 0);
+    transform: skew(0.18deg);
+  }
+  20% {
+    clip: rect(48px, 9999px, 53px, 0);
+    transform: skew(0.2deg);
+  }
+  25% {
+    clip: rect(45px, 9999px, 81px, 0);
+    transform: skew(0.85deg);
+  }
+  30% {
+    clip: rect(147px, 9999px, 23px, 0);
+    transform: skew(0.31deg);
+  }
+  35% {
+    clip: rect(5px, 9999px, 136px, 0);
+    transform: skew(0.66deg);
+  }
+  40% {
+    clip: rect(112px, 9999px, 5px, 0);
+    transform: skew(0.52deg);
+  }
+  45% {
+    clip: rect(87px, 9999px, 34px, 0);
+    transform: skew(0.61deg);
+  }
+  50% {
+    clip: rect(8px, 9999px, 12px, 0);
+    transform: skew(0.72deg);
+  }
+  55% {
+    clip: rect(139px, 9999px, 21px, 0);
+    transform: skew(0.65deg);
+  }
+  60% {
+    clip: rect(139px, 9999px, 49px, 0);
+    transform: skew(0.31deg);
+  }
+  65% {
+    clip: rect(76px, 9999px, 75px, 0);
+    transform: skew(0.67deg);
+  }
+  70% {
+    clip: rect(73px, 9999px, 30px, 0);
+    transform: skew(0.89deg);
+  }
+  75% {
+    clip: rect(77px, 9999px, 150px, 0);
+    transform: skew(0.58deg);
+  }
+  80% {
+    clip: rect(16px, 9999px, 13px, 0);
+    transform: skew(0.29deg);
+  }
+  85% {
+    clip: rect(126px, 9999px, 34px, 0);
+    transform: skew(0.4deg);
+  }
+  90% {
+    clip: rect(105px, 9999px, 83px, 0);
+    transform: skew(0.62deg);
+  }
+  95% {
+    clip: rect(53px, 9999px, 76px, 0);
+    transform: skew(0.62deg);
+  }
+  100% {
+    clip: rect(26px, 9999px, 67px, 0);
+    transform: skew(0.98deg);
+  }
+}
+
+@keyframes glitch-skew {
+  0% {
+    transform: skew(1deg);
+  }
+  10% {
+    transform: skew(0deg);
+  }
+  20% {
+    transform: skew(1deg);
+  }
+  30% {
+    transform: skew(-1deg);
+  }
+  40% {
+    transform: skew(0deg);
+  }
+  50% {
+    transform: skew(-1deg);
+  }
+  60% {
+    transform: skew(0deg);
+  }
+  70% {
+    transform: skew(1deg);
+  }
+  80% {
+    transform: skew(-1deg);
+  }
+  90% {
+    transform: skew(0deg);
+  }
+  100% {
+    transform: skew(-1deg);
+  }
+}
+
+/* Flicker text animation */
+.flicker-text {
+  animation: flicker 3s linear infinite;
+}
+
+@keyframes flicker {
+  0%,
+  19.999%,
+  22%,
+  62.999%,
+  64%,
+  64.999%,
+  70%,
+  100% {
+    opacity: 1;
+  }
+  20%,
+  21.999%,
+  63%,
+  63.999%,
+  65%,
+  69.999% {
+    opacity: 0.33;
+  }
+}
+
+/* VHS tracking effect */
+.vhs-tracking {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.2) 10%,
+    rgba(255, 255, 255, 0) 20%
+  );
+  animation: vhs-tracking 8s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes vhs-tracking {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+/* VHS flicker effect */
+.vhs-flicker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+  animation: vhs-flicker 8s infinite;
+}
+
+@keyframes vhs-flicker {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  5% {
+    opacity: 0.1;
+  }
+  5.1% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 0;
+  }
+  10.1% {
+    opacity: 0.2;
+  }
+  10.2% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 0;
+  }
+  25.1% {
+    opacity: 0.15;
+  }
+  25.2% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 0;
+  }
+  40.1% {
+    opacity: 0.25;
+  }
+  40.15% {
+    opacity: 0;
+  }
+  70% {
+    opacity: 0;
+  }
+  70.1% {
+    opacity: 0.15;
+  }
+  70.15% {
+    opacity: 0;
+  }
+  80% {
+    opacity: 0;
+  }
+  80.1% {
+    opacity: 0.2;
+  }
+  80.15% {
+    opacity: 0;
+  }
+}
+
+/* Social icons */
+.social-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.social-icon:hover {
+  border-color: #eab308;
+  color: #eab308;
+  transform: scale(1.1);
+}
+
+/* Vinyl record styles */
+.vinyl-grooves {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: repeating-radial-gradient(
+    circle at center,
+    rgba(0, 0, 0, 0) 0,
+    rgba(0, 0, 0, 0) 5px,
+    rgba(50, 50, 50, 0.5) 5.5px,
+    rgba(0, 0, 0, 0) 6px
+  );
+}
+
+.vinyl-label {
+  transform: rotate(0deg);
+  animation: counter-spin 2s linear infinite;
+}
+
+@keyframes counter-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
