@@ -57,14 +57,7 @@ export default function VinylPlayer({ isPlaying, currentTrack }: VinylPlayerProp
               {/* Vinyl grooves */}
               <div className="absolute inset-0 vinyl-grooves rounded-full"></div>
 
-              {/* Track label */}
-              {currentTrack && (
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3/5 h-3/5 rounded-full flex items-center justify-center">
-                  <div className="text-center text-xs text-yellow-400 font-bold tracking-wider vinyl-label">
-                    {currentTrack.title}
-                  </div>
-                </div>
-              )}
+              {/* Track label - Removed */}
             </div>
           </div>
 

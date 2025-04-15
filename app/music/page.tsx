@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Home, Play, Pause, SkipForward, SkipBack, Volume2 } from "lucide-react"
+import { Home, Play, Pause, SkipForward, SkipBack, Volume2, Instagram, Youtube } from "lucide-react"
 import VinylPlayer from "@/components/vinyl-player"
 
 interface Track {
@@ -23,6 +23,8 @@ export default function MusicPage() {
     { id: 1, title: "Song 1", duration: "3:45", audioSrc: "/audio/song1.mp3" },
     { id: 2, title: "Song 2", duration: "4:12", audioSrc: "/audio/song2.mp3" },
     { id: 3, title: "Song 3", duration: "3:30", audioSrc: "/audio/song3.mp3" },
+    { id: 4, title: "Song 4", duration: "3:58", audioSrc: "/audio/song4.mp3" },
+    { id: 5, title: "Song 5", duration: "4:25", audioSrc: "/audio/song5.mp3" },
   ]
 
   useEffect(() => {
@@ -81,7 +83,6 @@ export default function MusicPage() {
         if (audioRef.current) {
           audioRef.current.play().catch((e) => {
             console.error("Audio playback error:", e)
-            alert("Audio file not found or not supported. Please add audio files to the project.")
             setIsPlaying(false)
           })
           setIsPlaying(true)
@@ -154,9 +155,7 @@ export default function MusicPage() {
                   <span>{track.duration}</span>
                 </div>
               ))}
-              <div className="mt-4 p-3 text-yellow-400 text-sm border border-yellow-400/30 bg-black/30">
-                Note: Add MP3 files to the /public/audio/ folder named song1.mp3, song2.mp3, and song3.mp3
-              </div>
+              {/* Note box removed */}
             </div>
 
             <div className="flex justify-center space-x-4 mt-8">
@@ -193,6 +192,128 @@ export default function MusicPage() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Social Media Icons */}
+        <div className="mt-16 flex flex-col items-center">
+          <div className="flex flex-wrap justify-center gap-6 mb-8">
+            {/* Instagram */}
+            <a
+              href="https://www.instagram.com/djn3wm00n?igsh=OGQ5ZDc2ODk2ZA%3D%3D&utm_source=qr"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="social-icon"
+              aria-label="Instagram"
+            >
+              <Instagram className="h-6 w-6" />
+            </a>
+
+            {/* SoundCloud - Simple Cloud */}
+            <a
+              href="https://soundcloud.com/n3w-m00n"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="social-icon"
+              aria-label="SoundCloud"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="h-6 w-6"
+              >
+                <circle cx="12" cy="12" r="11" fill="none" stroke="currentColor" strokeWidth="1" />
+                <path
+                  d="M7,14 C7,12.5 8.5,11 10,11 C10,9.5 11.5,8 13,8 C14.5,8 16,9.5 16,11 C17.5,11 19,12.5 19,14 L7,14 Z"
+                  fill="currentColor"
+                  stroke="none"
+                />
+              </svg>
+            </a>
+
+            {/* Spotify - Three curved lines */}
+            <a
+              href="https://open.spotify.com/artist/38LzOlMU6bp1o0VONCN719?si=YkSC2nppR7OfLO5ZPLARSg"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="social-icon"
+              aria-label="Spotify"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="h-6 w-6"
+              >
+                <circle cx="12" cy="12" r="11" fill="none" stroke="currentColor" strokeWidth="1" />
+                <path
+                  d="M7,9 C12,7.5 17,9 17,9"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M7,12 C12,10.5 17,12 17,12"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M7,15 C12,13.5 17,15 17,15"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </a>
+
+            {/* Apple Music - Two eighth notes */}
+            <a
+              href="https://music.apple.com/us/artist/n3w-m00n/1743804011"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="social-icon"
+              aria-label="Apple Music"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="h-6 w-6"
+              >
+                <circle cx="12" cy="12" r="11" fill="none" stroke="currentColor" strokeWidth="1" />
+                <g transform="translate(6, 6)">
+                  <circle cx="2" cy="10" r="1.5" fill="currentColor" />
+                  <circle cx="10" cy="10" r="1.5" fill="currentColor" />
+                  <path d="M3,10 L3,4 L11,3 L11,10" fill="none" stroke="currentColor" strokeWidth="1.5" />
+                  <path d="M3,4 L11,3" fill="none" stroke="currentColor" strokeWidth="1.5" />
+                </g>
+              </svg>
+            </a>
+
+            {/* YouTube Music */}
+            <a
+              href="https://music.youtube.com/channel/UCb7517TATFU0x4s-Ecr1cMQ?si=kfhEHqyoqtOmhgLm"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="social-icon"
+              aria-label="YouTube Music"
+            >
+              <Youtube className="h-6 w-6" />
+            </a>
+          </div>
+          <p className="text-sm opacity-70 tracking-wide text-center">
+            © {new Date().getFullYear()} n3w m00n · ALL RIGHTS RESERVED
+          </p>
         </div>
       </div>
     </main>

@@ -7,6 +7,7 @@ export default function VideoFeature() {
   const containerRef = useRef<HTMLDivElement>(null)
   const [videoSize, setVideoSize] = useState({ width: 0, height: 0 })
   const [aspectRatio, setAspectRatio] = useState("16 / 9") // Default aspect ratio
+  const [scale, setScale] = useState(1)
 
   useEffect(() => {
     // Get original video dimensions when it's loaded
@@ -19,8 +20,40 @@ export default function VideoFeature() {
         const ratio = `${videoWidth} / ${videoHeight}`
         setAspectRatio(ratio)
 
+        // Calculate initial scale
+        calculateScale()
+
         console.log(`Video dimensions: ${videoWidth}x${videoHeight}, Aspect ratio: ${ratio}`)
       }
+    }
+
+    // Calculate scale based on viewport size
+    const calculateScale = () => {
+      if (videoRef.current && containerRef.current) {
+        const { videoWidth, videoHeight } = videoRef.current
+
+        // Get available viewport height (accounting for other elements)
+        // We'll use 80vh as a reasonable target for the video height
+        const targetHeight = window.innerHeight * 0.8
+
+        // Calculate how much we need to scale down to fit in the viewport
+        const heightRatio = targetHeight / videoHeight
+
+        // Limit the maximum width to the container width
+        const containerWidth = containerRef.current.parentElement?.clientWidth || window.innerWidth * 0.9
+        const widthRatio = containerWidth / videoWidth
+
+        // Use the smaller ratio to ensure it fits both dimensions
+        const newScale = Math.min(heightRatio, widthRatio, 1) // Don't scale up, only down
+
+        setScale(newScale)
+        console.log(`Scaling video by ${newScale}`)
+      }
+    }
+
+    // Handle window resize
+    const handleResize = () => {
+      calculateScale()
     }
 
     if (videoRef.current) {
@@ -52,10 +85,12 @@ export default function VideoFeature() {
 
       // Try to play video again when window gets focus, in case it was paused when tab was inactive
       window.addEventListener("focus", ensureVideoPlays)
+      window.addEventListener("resize", handleResize)
     }
 
     return () => {
       window.removeEventListener("focus", () => {})
+      window.removeEventListener("resize", handleResize)
       if (videoRef.current) {
         videoRef.current.removeEventListener("loadedmetadata", handleVideoMetadata)
       }
@@ -65,10 +100,12 @@ export default function VideoFeature() {
   return (
     <div
       ref={containerRef}
-      className="relative w-full max-w-4xl mx-auto overflow-hidden border-4 border-yellow-400/70 rounded-sm"
+      className="relative mx-auto overflow-hidden border-4 border-yellow-400/70 rounded-sm"
       style={{
         aspectRatio: aspectRatio,
-        maxWidth: videoSize.width > 0 ? `${videoSize.width}px` : "100%",
+        width: videoSize.width > 0 ? `${videoSize.width * scale}px` : "100%",
+        height: videoSize.height > 0 ? `${videoSize.height * scale}px` : "auto",
+        maxWidth: "100%",
       }}
     >
       <div className="absolute inset-0 vhs-effect">
