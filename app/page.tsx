@@ -40,13 +40,13 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div className="bg-black/50 border border-yellow-400/50 p-4 rounded-sm transform hover:scale-105 transition-transform duration-300">
             <h2 className="text-2xl font-bold mb-2 text-yellow-400">LATEST RELEASE</h2>
-            <p className="text-lg mb-4">"Slow" - Nina Lim - out now!</p>
+            <p className="text-lg mb-4">"Slow" - Nina Lim - Coming May 9th!</p>
             <a href="https://distrokid.com/hyperfollow/ninalim/slow" target="_blank" rel="noopener noreferrer">
               <Button
                 variant="outline"
                 className="border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black"
               >
-                LISTEN NOW
+                PRESAVE
               </Button>
             </a>
           </div>
