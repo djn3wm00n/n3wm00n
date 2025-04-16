@@ -75,7 +75,7 @@ export default function Home() {
                 <circle cx="12" cy="12" r="2" />
                 <path d="M12 14a7.5 7.5 0 0 0 0-4" />
               </svg>
-              ENTER THE MUSIC ZONE
+              MUSIC
             </Button>
           </Link>
         </div>

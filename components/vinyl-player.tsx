@@ -57,7 +57,14 @@ export default function VinylPlayer({ isPlaying, currentTrack }: VinylPlayerProp
               {/* Vinyl grooves */}
               <div className="absolute inset-0 vinyl-grooves rounded-full"></div>
 
-              {/* Track label - Removed */}
+              {/* Visual indicators for rotation */}
+              <div className="absolute top-[10%] left-1/2 transform -translate-x-1/2 w-2 h-8 bg-yellow-400/70 rounded-full"></div>
+              <div className="absolute top-[20%] right-[10%] transform rotate-45 w-2 h-8 bg-yellow-400/70 rounded-full"></div>
+              <div className="absolute bottom-[20%] left-[10%] transform rotate-45 w-2 h-8 bg-yellow-400/70 rounded-full"></div>
+
+              {/* Reflective highlights that move during spinning */}
+              <div className="absolute top-[15%] left-[30%] w-4 h-1 bg-white/30 rounded-full transform rotate-45"></div>
+              <div className="absolute bottom-[25%] right-[20%] w-6 h-1 bg-white/20 rounded-full transform -rotate-30"></div>
             </div>
           </div>
 
@@ -71,6 +78,12 @@ export default function VinylPlayer({ isPlaying, currentTrack }: VinylPlayerProp
             >
               <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-3 h-3 rounded-full bg-yellow-400"></div>
             </div>
+          </div>
+
+          {/* Turntable controls */}
+          <div className="absolute bottom-[10%] right-[10%] flex space-x-2">
+            <div className="w-4 h-4 rounded-full bg-red-500 border border-gray-600"></div>
+            <div className="w-8 h-3 rounded-sm bg-gray-600"></div>
           </div>
         </div>
       </div>

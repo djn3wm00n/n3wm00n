@@ -13,9 +13,7 @@ const vt323 = VT323({
 })
 
 export const metadata: Metadata = {
-  title: "90s Music Artist",
-  description: "A nostalgic 90s-inspired music artist homepage",
-    generator: 'v0.dev'
+  title: "n3w m00n"
 }
 
 export default function RootLayout({

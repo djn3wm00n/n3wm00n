@@ -3,58 +3,132 @@
 import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Home, Play, Pause, SkipForward, SkipBack, Volume2, Instagram, Youtube } from "lucide-react"
+import { Home, Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Volume1, Instagram, Youtube } from "lucide-react"
 import VinylPlayer from "@/components/vinyl-player"
+import { Slider } from "@/components/ui/slider"
 
 interface Track {
   id: number
   title: string
-  duration: string
+  duration?: string
   audioSrc: string
+  fileName?: string
 }
 
 export default function MusicPage() {
+  const [tracks, setTracks] = useState<Track[]>([])
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [volume, setVolume] = useState(0.7)
+  const [isMuted, setIsMuted] = useState(false)
+  const [duration, setDuration] = useState(0)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Updated tracks with simplified titles
-  const tracks: Track[] = [
-    { id: 1, title: "Song 1", duration: "3:45", audioSrc: "/audio/song1.mp3" },
-    { id: 2, title: "Song 2", duration: "4:12", audioSrc: "/audio/song2.mp3" },
-    { id: 3, title: "Song 3", duration: "3:30", audioSrc: "/audio/song3.mp3" },
-    { id: 4, title: "Song 4", duration: "3:58", audioSrc: "/audio/song4.mp3" },
-    { id: 5, title: "Song 5", duration: "4:25", audioSrc: "/audio/song5.mp3" },
-  ]
+  // Fetch tracks from API
+  useEffect(() => {
+    const fetchTracks = async () => {
+      try {
+        setIsLoading(true)
+        const response = await fetch("/api/audio")
+        if (!response.ok) throw new Error("Failed to fetch tracks")
 
+        const data = await response.json()
+
+        // If no tracks are found, use fallback tracks
+        if (data.tracks.length === 0) {
+          const fallbackTracks = [
+            { id: 1, title: "Song 1", duration: "3:45", audioSrc: "/audio/song1.mp3" },
+            { id: 2, title: "Song 2", duration: "4:12", audioSrc: "/audio/song2.mp3" },
+            { id: 3, title: "Song 3", duration: "3:30", audioSrc: "/audio/song3.mp3" },
+            { id: 4, title: "Song 4", duration: "3:58", audioSrc: "/audio/song4.mp3" },
+            { id: 5, title: "Song 5", duration: "4:25", audioSrc: "/audio/song5.mp3" },
+          ]
+          setTracks(fallbackTracks)
+        } else {
+          setTracks(data.tracks)
+        }
+      } catch (error) {
+        console.error("Error fetching tracks:", error)
+        // Use fallback tracks if API fails
+        const fallbackTracks = [
+          { id: 1, title: "Song 1", duration: "3:45", audioSrc: "/audio/song1.mp3" },
+          { id: 2, title: "Song 2", duration: "4:12", audioSrc: "/audio/song2.mp3" },
+          { id: 3, title: "Song 3", duration: "3:30", audioSrc: "/audio/song3.mp3" },
+          { id: 4, title: "Song 4", duration: "3:58", audioSrc: "/audio/song4.mp3" },
+          { id: 5, title: "Song 5", duration: "4:25", audioSrc: "/audio/song5.mp3" },
+        ]
+        setTracks(fallbackTracks)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchTracks()
+  }, [])
+
+  // Initialize audio element and set up event listeners
   useEffect(() => {
     if (!audioRef.current) {
       audioRef.current = new Audio()
+
+      // Set initial volume
+      audioRef.current.volume = volume
+
+      // Add event listeners for audio metadata
+      audioRef.current.addEventListener("loadedmetadata", handleMetadataLoaded)
+      audioRef.current.addEventListener("ended", handleTrackEnded)
+      audioRef.current.addEventListener("error", handleAudioError)
     }
 
-    if (currentTrack) {
-      // Set a flag to track if we've attempted to load the audio
-      let audioLoaded = false
-
-      // Add error handling for audio loading
-      const handleError = () => {
-        console.log("Audio file not found or not supported:", currentTrack.audioSrc)
-        setIsPlaying(false)
-        audioLoaded = false
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.removeEventListener("loadedmetadata", handleMetadataLoaded)
+        audioRef.current.removeEventListener("ended", handleTrackEnded)
+        audioRef.current.removeEventListener("error", handleAudioError)
+        audioRef.current.pause()
       }
 
-      audioRef.current.onerror = handleError
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current)
+      }
+    }
+  }, [])
+
+  // Handle track changes
+  useEffect(() => {
+    if (currentTrack && audioRef.current) {
+      // Stop any existing progress tracking
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current)
+      }
 
       try {
+        // Set new track source
         audioRef.current.src = currentTrack.audioSrc
-        audioLoaded = true
+        audioRef.current.load()
 
-        if (isPlaying && audioLoaded) {
-          audioRef.current.play().catch((e) => {
-            console.error("Audio playback error:", e)
-            setIsPlaying(false)
-          })
+        // If we should be playing, start playback
+        if (isPlaying) {
+          const playPromise = audioRef.current.play()
+          if (playPromise !== undefined) {
+            playPromise.catch((error) => {
+              console.error("Playback error:", error)
+              setIsPlaying(false)
+            })
+          }
         }
+
+        // Start tracking progress
+        progressIntervalRef.current = setInterval(() => {
+          if (audioRef.current && !isDragging) {
+            setCurrentTime(audioRef.current.currentTime)
+          }
+        }, 1000)
       } catch (error) {
         console.error("Error setting audio source:", error)
         setIsPlaying(false)
@@ -62,12 +136,64 @@ export default function MusicPage() {
     }
 
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause()
-        audioRef.current.onerror = null
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current)
       }
     }
   }, [currentTrack, isPlaying])
+
+  // Handle volume changes
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = isMuted ? 0 : volume
+    }
+  }, [volume, isMuted])
+
+  // Handle play/pause state changes
+  useEffect(() => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        const playPromise = audioRef.current.play()
+        if (playPromise !== undefined) {
+          playPromise.catch((error) => {
+            console.error("Playback error:", error)
+            setIsPlaying(false)
+          })
+        }
+      } else {
+        audioRef.current.pause()
+      }
+    }
+  }, [isPlaying])
+
+  // Event handlers
+  const handleMetadataLoaded = () => {
+    if (audioRef.current) {
+      setDuration(audioRef.current.duration)
+
+      // Update track duration in the tracks list
+      if (currentTrack) {
+        const formattedDuration = formatTime(audioRef.current.duration)
+        setTracks((prevTracks) =>
+          prevTracks.map((track) => (track.id === currentTrack.id ? { ...track, duration: formattedDuration } : track)),
+        )
+      }
+    }
+  }
+
+  const handleTrackEnded = () => {
+    playNextTrack()
+  }
+
+  const handleAudioError = (e: Event) => {
+    console.error("Audio error:", e)
+    setIsPlaying(false)
+
+    // Try to play the next track if there's an error
+    if (currentTrack) {
+      playNextTrack()
+    }
+  }
 
   const handleTrackSelect = (track: Track) => {
     setCurrentTrack(track)
@@ -76,21 +202,10 @@ export default function MusicPage() {
 
   const togglePlayPause = () => {
     if (currentTrack) {
-      if (isPlaying) {
-        audioRef.current?.pause()
-        setIsPlaying(false)
-      } else {
-        if (audioRef.current) {
-          audioRef.current.play().catch((e) => {
-            console.error("Audio playback error:", e)
-            setIsPlaying(false)
-          })
-          setIsPlaying(true)
-        }
-      }
+      setIsPlaying(!isPlaying)
     } else if (tracks.length > 0) {
       setCurrentTrack(tracks[0])
-      // Don't set isPlaying to true here, let the useEffect handle it
+      setIsPlaying(true)
     }
   }
 
@@ -100,16 +215,75 @@ export default function MusicPage() {
       const nextIndex = (currentIndex + 1) % tracks.length
       setCurrentTrack(tracks[nextIndex])
       setIsPlaying(true)
+    } else if (tracks.length > 0) {
+      setCurrentTrack(tracks[0])
+      setIsPlaying(true)
     }
   }
 
   const playPrevTrack = () => {
     if (currentTrack && tracks.length > 0) {
       const currentIndex = tracks.findIndex((track) => track.id === currentTrack.id)
+
+      // If we're more than 3 seconds into the song, restart it instead of going to previous
+      if (currentTime > 3) {
+        if (audioRef.current) {
+          audioRef.current.currentTime = 0
+          setCurrentTime(0)
+        }
+        return
+      }
+
       const prevIndex = (currentIndex - 1 + tracks.length) % tracks.length
       setCurrentTrack(tracks[prevIndex])
       setIsPlaying(true)
+    } else if (tracks.length > 0) {
+      setCurrentTrack(tracks[0])
+      setIsPlaying(true)
     }
+  }
+
+  const handleVolumeChange = (value: number[]) => {
+    const newVolume = value[0]
+    setVolume(newVolume)
+    setIsMuted(newVolume === 0)
+  }
+
+  const toggleMute = () => {
+    setIsMuted(!isMuted)
+  }
+
+  const handleProgressChange = (value: number[]) => {
+    const newTime = value[0]
+    setCurrentTime(newTime)
+
+    if (audioRef.current) {
+      audioRef.current.currentTime = newTime
+    }
+  }
+
+  const handleProgressDragStart = () => {
+    setIsDragging(true)
+  }
+
+  const handleProgressDragEnd = () => {
+    setIsDragging(false)
+  }
+
+  // Helper functions
+  const formatTime = (seconds: number): string => {
+    if (isNaN(seconds)) return "0:00"
+
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = Math.floor(seconds % 60)
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
+  }
+
+  // Get volume icon based on current volume
+  const getVolumeIcon = () => {
+    if (isMuted || volume === 0) return <VolumeX className="h-5 w-5" />
+    if (volume < 0.5) return <Volume1 className="h-5 w-5" />
+    return <Volume2 className="h-5 w-5" />
   }
 
   return (
@@ -132,33 +306,29 @@ export default function MusicPage() {
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mt-12">
-          <div className="flex justify-center items-center">
+          <div className="flex flex-col justify-center items-center">
             <VinylPlayer isPlaying={isPlaying} currentTrack={currentTrack} />
-          </div>
 
-          <div className="bg-black/50 border border-yellow-400/50 p-6 rounded-sm">
-            <h2 className="text-3xl font-bold mb-6 text-yellow-400">TRACKLIST</h2>
-
-            <div className="space-y-4 mb-8">
-              {tracks.map((track) => (
-                <div
-                  key={track.id}
-                  onClick={() => handleTrackSelect(track)}
-                  className={`flex justify-between p-3 cursor-pointer hover:bg-yellow-400/20 transition-colors ${
-                    currentTrack?.id === track.id ? "bg-yellow-400/30 border-l-4 border-yellow-400" : ""
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <span className="mr-4">{track.id}.</span>
-                    <span className="text-xl">{track.title}</span>
-                  </div>
-                  <span>{track.duration}</span>
-                </div>
-              ))}
-              {/* Note box removed */}
+            {/* Progress bar */}
+            <div className="w-full mt-8 px-4">
+              <div className="flex justify-between text-sm mb-1">
+                <span>{formatTime(currentTime)}</span>
+                <span>{currentTrack?.duration || formatTime(duration)}</span>
+              </div>
+              <Slider
+                value={[currentTime]}
+                min={0}
+                max={duration || 100}
+                step={1}
+                onValueChange={handleProgressChange}
+                onValueCommitStart={handleProgressDragStart}
+                onValueCommitEnd={handleProgressDragEnd}
+                className="w-full"
+              />
             </div>
 
-            <div className="flex justify-center space-x-4 mt-8">
+            {/* Playback controls */}
+            <div className="flex justify-center space-x-4 mt-6">
               <Button
                 onClick={playPrevTrack}
                 variant="outline"
@@ -185,12 +355,60 @@ export default function MusicPage() {
               </Button>
             </div>
 
-            <div className="flex items-center justify-center mt-6">
-              <Volume2 className="h-5 w-5 mr-2 text-yellow-400" />
-              <div className="w-48 h-2 bg-gray-700 rounded-full">
-                <div className="w-3/4 h-full bg-yellow-400 rounded-full"></div>
-              </div>
+            {/* Volume control */}
+            <div className="flex items-center justify-center mt-6 w-full px-4">
+              <Button
+                onClick={toggleMute}
+                variant="ghost"
+                size="icon"
+                className="mr-2 text-yellow-400 hover:bg-transparent hover:text-yellow-500"
+              >
+                {getVolumeIcon()}
+              </Button>
+              <Slider
+                value={[isMuted ? 0 : volume]}
+                min={0}
+                max={1}
+                step={0.01}
+                onValueChange={handleVolumeChange}
+                className="w-48"
+              />
             </div>
+          </div>
+
+          <div className="bg-black/50 border border-yellow-400/50 p-6 rounded-sm">
+            <h2 className="text-3xl font-bold mb-6 text-yellow-400">TRACKLIST</h2>
+
+            {isLoading ? (
+              <div className="flex justify-center items-center h-40">
+                <div className="animate-pulse text-yellow-400">Loading tracks...</div>
+              </div>
+            ) : tracks.length === 0 ? (
+              <div className="text-center py-8">
+                <p>No audio files found.</p>
+                <p className="text-sm text-yellow-400 mt-2">
+                  Add MP3 files to the /public/audio/ folder to see them here.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4 mb-8 max-h-[400px] overflow-y-auto pr-2">
+                {tracks.map((track) => (
+                  <div
+                    key={track.id}
+                    onClick={() => handleTrackSelect(track)}
+                    className={`flex justify-between p-3 cursor-pointer hover:bg-yellow-400/20 transition-colors ${
+                      currentTrack?.id === track.id ? "bg-yellow-400/30 border-l-4 border-yellow-400" : ""
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <span className="mr-4">{track.id}.</span>
+                      <span className="text-xl">{track.title}</span>
+                    </div>
+                    <span>{track.duration || "--:--"}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
