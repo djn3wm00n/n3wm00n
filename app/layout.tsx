@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { VT323 } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import HamburgerMenu from "@/components/hamburger-menu"
 
 // Load VT323 font with proper configuration
 const vt323 = VT323({
@@ -13,7 +14,8 @@ const vt323 = VT323({
 })
 
 export const metadata: Metadata = {
-  title: "n3w m00n"
+  title: "n3w m00n",
+    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -27,6 +29,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
           <div className="scanlines"></div>
           <div className="noise"></div>
+          <HamburgerMenu />
           {children}
         </ThemeProvider>
       </body>

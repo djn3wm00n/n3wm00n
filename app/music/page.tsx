@@ -1,9 +1,8 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Home, Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Volume1, Instagram, Youtube } from "lucide-react"
+import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Volume1, Instagram, Youtube } from "lucide-react"
 import VinylPlayer from "@/components/vinyl-player"
 import { Slider } from "@/components/ui/slider"
 
@@ -25,9 +24,11 @@ export default function MusicPage() {
   const [duration, setDuration] = useState(0)
   const [currentTime, setCurrentTime] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
+  const [trackDurations, setTrackDurations] = useState<Record<string, string>>({})
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const audioElementsRef = useRef<Record<string, HTMLAudioElement>>({})
 
   // Fetch tracks from API
   useEffect(() => {
@@ -42,25 +43,30 @@ export default function MusicPage() {
         // If no tracks are found, use fallback tracks
         if (data.tracks.length === 0) {
           const fallbackTracks = [
-            { id: 1, title: "Song 1", duration: "3:45", audioSrc: "/audio/song1.mp3" },
-            { id: 2, title: "Song 2", duration: "4:12", audioSrc: "/audio/song2.mp3" },
-            { id: 3, title: "Song 3", duration: "3:30", audioSrc: "/audio/song3.mp3" },
-            { id: 4, title: "Song 4", duration: "3:58", audioSrc: "/audio/song4.mp3" },
-            { id: 5, title: "Song 5", duration: "4:25", audioSrc: "/audio/song5.mp3" },
+            { id: 1, title: "Song 1", duration: "--:--", audioSrc: "/audio/song1.mp3" },
+            { id: 2, title: "Song 2", duration: "--:--", audioSrc: "/audio/song2.mp3" },
+            { id: 3, title: "Song 3", duration: "--:--", audioSrc: "/audio/song3.mp3" },
+            { id: 4, title: "Song 4", duration: "--:--", audioSrc: "/audio/song4.mp3" },
+            { id: 5, title: "Song 5", duration: "--:--", audioSrc: "/audio/song5.mp3" },
           ]
           setTracks(fallbackTracks)
         } else {
-          setTracks(data.tracks)
+          // Initialize with placeholder durations
+          const tracksWithPlaceholders = data.tracks.map((track: Track) => ({
+            ...track,
+            duration: "--:--",
+          }))
+          setTracks(tracksWithPlaceholders)
         }
       } catch (error) {
         console.error("Error fetching tracks:", error)
         // Use fallback tracks if API fails
         const fallbackTracks = [
-          { id: 1, title: "Song 1", duration: "3:45", audioSrc: "/audio/song1.mp3" },
-          { id: 2, title: "Song 2", duration: "4:12", audioSrc: "/audio/song2.mp3" },
-          { id: 3, title: "Song 3", duration: "3:30", audioSrc: "/audio/song3.mp3" },
-          { id: 4, title: "Song 4", duration: "3:58", audioSrc: "/audio/song4.mp3" },
-          { id: 5, title: "Song 5", duration: "4:25", audioSrc: "/audio/song5.mp3" },
+          { id: 1, title: "Song 1", duration: "--:--", audioSrc: "/audio/song1.mp3" },
+          { id: 2, title: "Song 2", duration: "--:--", audioSrc: "/audio/song2.mp3" },
+          { id: 3, title: "Song 3", duration: "--:--", audioSrc: "/audio/song3.mp3" },
+          { id: 4, title: "Song 4", duration: "--:--", audioSrc: "/audio/song4.mp3" },
+          { id: 5, title: "Song 5", duration: "--:--", audioSrc: "/audio/song5.mp3" },
         ]
         setTracks(fallbackTracks)
       } finally {
@@ -70,6 +76,46 @@ export default function MusicPage() {
 
     fetchTracks()
   }, [])
+
+  // Load durations for all tracks
+  useEffect(() => {
+    if (tracks.length === 0) return
+
+    // Create audio elements for each track to get durations
+    tracks.forEach((track) => {
+      if (!audioElementsRef.current[track.id]) {
+        const audio = new Audio(track.audioSrc)
+        audioElementsRef.current[track.id] = audio
+
+        audio.addEventListener("loadedmetadata", () => {
+          const formattedDuration = formatTime(audio.duration)
+          setTrackDurations((prev) => ({
+            ...prev,
+            [track.id]: formattedDuration,
+          }))
+
+          // Update the track in the tracks array
+          setTracks((prevTracks) =>
+            prevTracks.map((t) => (t.id === track.id ? { ...t, duration: formattedDuration } : t)),
+          )
+        })
+
+        audio.addEventListener("error", () => {
+          console.error(`Error loading audio for track ${track.id}: ${track.title}`)
+          // Keep the placeholder duration for this track
+        })
+      }
+    })
+
+    // Cleanup function
+    return () => {
+      Object.values(audioElementsRef.current).forEach((audio) => {
+        audio.pause()
+        audio.src = ""
+      })
+      audioElementsRef.current = {}
+    }
+  }, [tracks])
 
   // Initialize audio element and set up event listeners
   useEffect(() => {
@@ -272,7 +318,7 @@ export default function MusicPage() {
 
   // Helper functions
   const formatTime = (seconds: number): string => {
-    if (isNaN(seconds)) return "0:00"
+    if (isNaN(seconds)) return "--:--"
 
     const minutes = Math.floor(seconds / 60)
     const remainingSeconds = Math.floor(seconds % 60)
@@ -289,20 +335,10 @@ export default function MusicPage() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden py-12">
       <div className="container max-w-6xl px-4 z-10">
-        <header className="mb-8 flex justify-between items-center">
-          <Link href="/">
-            <Button
-              variant="outline"
-              className="border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black"
-            >
-              <Home className="mr-2 h-5 w-5" />
-              HOME
-            </Button>
-          </Link>
+        <header className="mb-8">
           <h1 className="text-4xl md:text-6xl font-bold text-center glitch-text" data-text="Music">
             Music
           </h1>
-          <div className="w-[100px]"></div> {/* Spacer for centering */}
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mt-12">
@@ -404,7 +440,7 @@ export default function MusicPage() {
                       <span className="mr-4">{track.id}.</span>
                       <span className="text-xl">{track.title}</span>
                     </div>
-                    <span>{track.duration || "--:--"}</span>
+                    <span>{track.duration || trackDurations[track.id] || "--:--"}</span>
                   </div>
                 ))}
               </div>
@@ -492,7 +528,7 @@ export default function MusicPage() {
               </svg>
             </a>
 
-            {/* Apple Music - Two eighth notes */}
+            {/* Apple Music - Improved icon to match Apple Music logo */}
             <a
               href="https://music.apple.com/us/artist/n3w-m00n/1743804011"
               target="_blank"
@@ -509,11 +545,17 @@ export default function MusicPage() {
                 className="h-6 w-6"
               >
                 <circle cx="12" cy="12" r="11" fill="none" stroke="currentColor" strokeWidth="1" />
-                <g transform="translate(6, 6)">
-                  <circle cx="2" cy="10" r="1.5" fill="currentColor" />
-                  <circle cx="10" cy="10" r="1.5" fill="currentColor" />
-                  <path d="M3,10 L3,4 L11,3 L11,10" fill="none" stroke="currentColor" strokeWidth="1.5" />
-                  <path d="M3,4 L11,3" fill="none" stroke="currentColor" strokeWidth="1.5" />
+                <g transform="translate(7, 6)">
+                  {/* Eighth note 1 */}
+                  <circle cx="2.5" cy="10" r="1.5" fill="currentColor" />
+                  <path d="M2.5,10 L2.5,4" stroke="currentColor" strokeWidth="1.5" fill="none" />
+
+                  {/* Eighth note 2 */}
+                  <circle cx="7.5" cy="10" r="1.5" fill="currentColor" />
+                  <path d="M7.5,10 L7.5,4" stroke="currentColor" strokeWidth="1.5" fill="none" />
+
+                  {/* Beam connecting the notes */}
+                  <path d="M2.5,4 L7.5,4" stroke="currentColor" strokeWidth="1.5" fill="none" />
                 </g>
               </svg>
             </a>

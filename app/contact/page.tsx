@@ -1,87 +1,54 @@
 "use client"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Instagram, Youtube } from "lucide-react"
-import VideoFeature from "@/components/video-feature"
-import { useEffect, useState } from "react"
+import { Mail, MessageSquare, Phone, Instagram, Youtube } from "lucide-react"
 
-export default function Home() {
-  const [windowHeight, setWindowHeight] = useState(0)
-
-  useEffect(() => {
-    // Set initial window height
-    setWindowHeight(window.innerHeight)
-
-    // Update window height on resize
-    const handleResize = () => {
-      setWindowHeight(window.innerHeight)
-    }
-
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
-
+export default function ContactPage() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden">
-      <div className="container max-w-6xl px-4 py-4 z-10">
-        <header className="mb-6 glitch-container">
-          <h1 className="text-5xl md:text-7xl font-bold text-center glitch-text" data-text="n3w m00n">
-            n3w m00n
+    <main className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden py-12">
+      <div className="container max-w-6xl px-4 z-10">
+        <header className="mb-8">
+          <h1 className="text-4xl md:text-6xl font-bold text-center glitch-text" data-text="Contact">
+            Contact
           </h1>
-          <p className="text-lg md:text-xl text-center mt-2 text-yellow-400 tracking-wider flicker-text">
-            MUSICIAN / DIGITAL ARTIST / PRODUCER
-          </p>
         </header>
 
-        <div className="flex justify-center mb-6">
-          <VideoFeature />
-        </div>
+        <div className="bg-black/50 border border-yellow-400/50 p-6 rounded-sm max-w-2xl mx-auto">
+          <h2 className="text-3xl font-bold mb-6 text-yellow-400">GET IN TOUCH</h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div className="bg-black/50 border border-yellow-400/50 p-4 rounded-sm transform hover:scale-105 transition-transform duration-300">
-            <h2 className="text-2xl font-bold mb-2 text-yellow-400">LATEST RELEASE</h2>
-            <p className="text-lg mb-4">"Slow" - Nina Lim - out now!</p>
-            <a href="https://distrokid.com/hyperfollow/ninalim/slow" target="_blank" rel="noopener noreferrer">
-              <Button
-                variant="outline"
-                className="border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black"
-              >
-                LISTEN NOW
-              </Button>
-            </a>
+          <div className="space-y-6">
+            <div className="flex items-start">
+              <Mail className="w-6 h-6 text-yellow-400 mr-4 mt-1" />
+              <div>
+                <h3 className="text-xl font-bold">Email</h3>
+                <p className="text-gray-300">djn3wm00n@gmail.com</p>
+              </div>
+            </div>
+
+            <div className="flex items-start">
+              <Phone className="w-6 h-6 text-yellow-400 mr-4 mt-1" />
+              <div>
+                <h3 className="text-xl font-bold">Phone</h3>
+                <p className="text-gray-300">+1 (555) n3w-m00n</p>
+              </div>
+            </div>
+
+            <div className="flex items-start">
+              <MessageSquare className="w-6 h-6 text-yellow-400 mr-4 mt-1" />
+              <div>
+                <h3 className="text-xl font-bold">Social Media</h3>
+                <p className="text-gray-300">@djn3wm00n on all platforms</p>
+              </div>
+            </div>
           </div>
-          <div className="bg-black/50 border border-yellow-400/50 p-4 rounded-sm transform hover:scale-105 transition-transform duration-300">
-            <h2 className="text-2xl font-bold mb-2 text-yellow-400">UPCOMING SHOWS</h2>
-            <p className="text-lg">Coming soon - stay tuned!</p>
+
+          <div className="mt-8 p-4 border border-yellow-400/30 bg-black/30 rounded-sm">
+            <p className="text-yellow-400 font-bold">BOOKING INQUIRIES</p>
+            <p className="mt-2">For booking and collaboration inquiries, please email djn3wm00n@gmail.com</p>
           </div>
         </div>
 
-        <div className="text-center mb-6">
-          <Link href="/music">
-            <Button className="bg-yellow-400 text-black hover:bg-yellow-500 text-lg px-6 py-4 rounded-sm">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="mr-2 h-5 w-5"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <circle cx="12" cy="12" r="2" />
-                <path d="M12 14a7.5 7.5 0 0 0 0-4" />
-              </svg>
-              LISTEN NOW
-            </Button>
-          </Link>
-        </div>
-
-        <footer className="flex flex-col items-center mt-4">
-          <div className="flex flex-wrap justify-center gap-6 mb-4">
+        {/* Social Media Icons */}
+        <div className="mt-16 flex flex-col items-center">
+          <div className="flex flex-wrap justify-center gap-6 mb-8">
             {/* Instagram */}
             <a
               href="https://www.instagram.com/djn3wm00n?igsh=OGQ5ZDc2ODk2ZA%3D%3D&utm_source=qr"
@@ -159,7 +126,7 @@ export default function Home() {
               </svg>
             </a>
 
-            {/* Apple Music - Two eighth notes in a circle */}
+            {/* Apple Music - Improved icon to match Apple Music logo */}
             <a
               href="https://music.apple.com/us/artist/n3w-m00n/1743804011"
               target="_blank"
@@ -202,10 +169,10 @@ export default function Home() {
               <Youtube className="h-6 w-6" />
             </a>
           </div>
-          <p className="text-xs opacity-70 tracking-wide">
+          <p className="text-sm opacity-70 tracking-wide text-center">
             © {new Date().getFullYear()} n3w m00n · ALL RIGHTS RESERVED
           </p>
-        </footer>
+        </div>
       </div>
     </main>
   )

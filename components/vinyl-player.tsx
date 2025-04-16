@@ -22,9 +22,9 @@ export default function VinylPlayer({ isPlaying, currentTrack }: VinylPlayerProp
 
     if (armRef.current) {
       if (isPlaying) {
-        armRef.current.style.transform = "rotate(25deg)"
+        armRef.current.style.transform = "rotate(0deg)" // Arm off the vinyl when playing (reversed)
       } else {
-        armRef.current.style.transform = "rotate(0deg)"
+        armRef.current.style.transform = "rotate(25deg)" // Arm on the vinyl when stopped (reversed)
       }
     }
   }, [isPlaying])
@@ -54,17 +54,14 @@ export default function VinylPlayer({ isPlaying, currentTrack }: VinylPlayerProp
                 <div className="w-1/3 h-1/3 rounded-full bg-black"></div>
               </div>
 
-              {/* Vinyl grooves */}
+              {/* Vinyl grooves - keeping these for better visibility */}
               <div className="absolute inset-0 vinyl-grooves rounded-full"></div>
 
-              {/* Visual indicators for rotation */}
-              <div className="absolute top-[10%] left-1/2 transform -translate-x-1/2 w-2 h-8 bg-yellow-400/70 rounded-full"></div>
-              <div className="absolute top-[20%] right-[10%] transform rotate-45 w-2 h-8 bg-yellow-400/70 rounded-full"></div>
-              <div className="absolute bottom-[20%] left-[10%] transform rotate-45 w-2 h-8 bg-yellow-400/70 rounded-full"></div>
-
-              {/* Reflective highlights that move during spinning */}
-              <div className="absolute top-[15%] left-[30%] w-4 h-1 bg-white/30 rounded-full transform rotate-45"></div>
-              <div className="absolute bottom-[25%] right-[20%] w-6 h-1 bg-white/20 rounded-full transform -rotate-30"></div>
+              {/* Cross-shaped visual indicators for rotation */}
+              <div className="absolute top-[10%] left-1/2 transform -translate-x-1/2 w-2 h-8 bg-gray-600 rounded-full"></div>
+              <div className="absolute bottom-[10%] left-1/2 transform -translate-x-1/2 w-2 h-8 bg-gray-600 rounded-full"></div>
+              <div className="absolute left-[10%] top-1/2 transform -translate-y-1/2 w-8 h-2 bg-gray-600 rounded-full"></div>
+              <div className="absolute right-[10%] top-1/2 transform -translate-y-1/2 w-8 h-2 bg-gray-600 rounded-full"></div>
             </div>
           </div>
 

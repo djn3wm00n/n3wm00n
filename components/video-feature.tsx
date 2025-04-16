@@ -8,6 +8,7 @@ export default function VideoFeature() {
   const [videoSize, setVideoSize] = useState({ width: 0, height: 0 })
   const [aspectRatio, setAspectRatio] = useState("16 / 9") // Default aspect ratio
   const [scale, setScale] = useState(1)
+  const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
     // Get original video dimensions when it's loaded
@@ -19,6 +20,9 @@ export default function VideoFeature() {
         // Calculate and set the exact aspect ratio from the video
         const ratio = `${videoWidth} / ${videoHeight}`
         setAspectRatio(ratio)
+
+        // Mark video as loaded
+        setIsLoaded(true)
 
         // Calculate initial scale
         calculateScale()
@@ -33,8 +37,8 @@ export default function VideoFeature() {
         const { videoWidth, videoHeight } = videoRef.current
 
         // Get available viewport height (accounting for other elements)
-        // We'll use 80vh as a reasonable target for the video height
-        const targetHeight = window.innerHeight * 0.8
+        // We'll use 70vh as a reasonable target for the video height to avoid cropping
+        const targetHeight = window.innerHeight * 0.7
 
         // Calculate how much we need to scale down to fit in the viewport
         const heightRatio = targetHeight / videoHeight
@@ -46,8 +50,11 @@ export default function VideoFeature() {
         // Use the smaller ratio to ensure it fits both dimensions
         const newScale = Math.min(heightRatio, widthRatio, 1) // Don't scale up, only down
 
-        setScale(newScale)
-        console.log(`Scaling video by ${newScale}`)
+        // Apply scale with a small delay to ensure DOM is ready
+        setTimeout(() => {
+          setScale(newScale)
+          console.log(`Scaling video by ${newScale}`)
+        }, 50)
       }
     }
 
@@ -86,6 +93,9 @@ export default function VideoFeature() {
       // Try to play video again when window gets focus, in case it was paused when tab was inactive
       window.addEventListener("focus", ensureVideoPlays)
       window.addEventListener("resize", handleResize)
+
+      // Additional resize check after a delay to handle initial rendering issues
+      setTimeout(calculateScale, 500)
     }
 
     return () => {
@@ -106,6 +116,7 @@ export default function VideoFeature() {
         width: videoSize.width > 0 ? `${videoSize.width * scale}px` : "100%",
         height: videoSize.height > 0 ? `${videoSize.height * scale}px` : "auto",
         maxWidth: "100%",
+        visibility: isLoaded ? "visible" : "hidden", // Hide until loaded to prevent flash of incorrect size
       }}
     >
       <div className="absolute inset-0 vhs-effect">
@@ -117,6 +128,7 @@ export default function VideoFeature() {
           muted
           playsInline
           autoPlay
+          onLoadedData={() => setIsLoaded(true)}
         />
         <div className="absolute inset-0 vhs-tracking"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
@@ -127,6 +139,13 @@ export default function VideoFeature() {
           <div className="absolute inset-0 vhs-flicker"></div>
         </div>
       </div>
+
+      {/* Loading indicator */}
+      {!isLoaded && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+          <div className="text-yellow-400 animate-pulse">Loading...</div>
+        </div>
+      )}
     </div>
   )
 }
